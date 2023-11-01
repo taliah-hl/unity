@@ -6,18 +6,21 @@ using UnityEngine;
 public class PlayerMovement : MonoBehaviour
 {
     // Start is called before the first frame update
-    public float PlayersMovementSPeed=10.0f; //this is players movement speed.
-    
-    [SerializeField]
+    [SerializeField] private float PlayersMovementSPeed=10.0f; 
+    [SerializeField] private float PlayerJumpingForce = 16.0f;
+    [SerializeField] private float BoxCast_y_offset = .5f;
+    [SerializeField] private LayerMask JumpableGround;
+
 
     //private float _playersMovementDirection = 0.0f; //this will give the direction of the players movement.   
-    public float PlayerJumpingForce = 10.0f; //this is players jumping force.
+    
     private Rigidbody2D _playersRigidBody; //reference of the players rigid body.
     private Animator animator;
 
     private Vector2 _moveInput;
     private float dir_x = 0f;
     private SpriteRenderer sprite;
+    private BoxCollider2D player_collider;
 
 
     void Awake(){
@@ -36,6 +39,7 @@ public class PlayerMovement : MonoBehaviour
        _playersRigidBody = GetComponent<Rigidbody2D>();
        animator = GetComponent<Animator>();
        sprite = GetComponent<SpriteRenderer>();
+       player_collider = GetComponent<BoxCollider2D>();
 
        
         
@@ -59,10 +63,14 @@ public class PlayerMovement : MonoBehaviour
     {
         dir_x = Input.GetAxisRaw("Horizontal");
         _playersRigidBody.velocity = new Vector2(dir_x * PlayersMovementSPeed, _playersRigidBody.velocity.y);
-        if (Input.GetButtonDown("Jump"))
+        if (Input.GetButtonDown("Jump") )
         {
 
-            _playersRigidBody.velocity = new Vector2(dir_x, PlayerJumpingForce);
+            Debug.Log("Jump pressed");
+            if(IsGrounded()){
+                _playersRigidBody.velocity = new Vector2(dir_x, PlayerJumpingForce);
+            }
+            
         }
         AnimationUpdate();
         
@@ -80,5 +88,13 @@ public class PlayerMovement : MonoBehaviour
         else{
             animator.SetBool("isRunning", false);
         }
+    }
+
+    private bool IsGrounded(){
+        bool isgounrd;
+        isgounrd = Physics2D.BoxCast(player_collider.bounds.center, player_collider.bounds.size, 0f, Vector2.down, BoxCast_y_offset, JumpableGround);
+        //create a box (center, size, rotation)
+        Debug.Log("is ground is:" + isgounrd);
+        return isgounrd;
     }
 }
